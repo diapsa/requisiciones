@@ -2,8 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\ExpenseReport;
+use App\Models\Payment;
+use App\Models\Requisition;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -26,7 +30,22 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureMorphMap();
         $this->configureAuthorization();
+    }
+
+    /**
+     * Store short aliases instead of class names in polymorphic columns
+     * (`approvals.approvable_type`, `model_has_roles.model_type`).
+     */
+    protected function configureMorphMap(): void
+    {
+        Relation::enforceMorphMap([
+            'user' => User::class,
+            'requisition' => Requisition::class,
+            'expense_report' => ExpenseReport::class,
+            'payment' => Payment::class,
+        ]);
     }
 
     /**

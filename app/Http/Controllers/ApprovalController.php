@@ -32,10 +32,10 @@ class ApprovalController extends Controller
     private function rules(?Approval $approval = null): array
     {
         return [
-            'approvable_type' => ['required', 'string', 'max:50'],
+            'approvable_type' => ['required', 'in:requisition,expense_report,payment'],
             'approvable_id' => ['required', 'integer', 'min:0'],
             'approver_id' => ['required', 'integer', 'exists:users,id'],
-            'stage' => ['required', 'in:coordinator,administration,deposit_confirmation'],
+            'stage' => ['required', 'in:coordinator,manager,deposit_confirmation'],
             'decision' => ['required', 'in:approved,rejected,returned,confirmed,not_received'],
             'comments' => ['nullable', 'string'],
             'decided_at' => ['required', 'date'],

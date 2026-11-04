@@ -63,8 +63,8 @@ class RequisitionController extends Controller
             'requested_on' => ['required', 'date_format:Y-m-d'],
             'starts_on' => ['required', 'date_format:Y-m-d'],
             'ends_on' => ['required', 'date_format:Y-m-d', 'after_or_equal:starts_on'],
-            'status' => ['required', 'in:draft,submitted,approved,rejected,advance_paid,advance_received,closed,cancelled'],
-            'approved_amount' => ['required', 'numeric', 'decimal:0,2', 'between:-9999999999.99,9999999999.99'],
+            'status' => ['required', 'in:draft,submitted,approved,rejected,advance_received,closed,cancelled'],
+            'approved_amount' => ['nullable', 'numeric', 'decimal:0,2', 'between:-9999999999.99,9999999999.99'],
             'submitted_at' => ['nullable', 'date'],
             'terms_accepted_at' => ['nullable', 'date'],
         ];
