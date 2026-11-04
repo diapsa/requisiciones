@@ -123,4 +123,18 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Initial Administrator
+    |--------------------------------------------------------------------------
+    |
+    | Public registration is disabled, so `php artisan db:seed` creates the
+    | first administrator with these credentials. Leave them empty to skip.
+    |
+    */
+
+    'admin_email' => env('ADMIN_EMAIL'),
+
+    'admin_password' => env('ADMIN_PASSWORD'),
+
 ];

@@ -15,11 +15,30 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(RolePermissionSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $this->createAdministrator();
+    }
+
+    /**
+     * Create the first administrator from ADMIN_EMAIL and ADMIN_PASSWORD, since there is no public registration.
+     */
+    private function createAdministrator(): void
+    {
+        $email = config('app.admin_email');
+        $password = config('app.admin_password');
+
+        if (blank($email) || blank($password)) {
+            $this->command->warn('ADMIN_EMAIL or ADMIN_PASSWORD is empty; the administrator was not created.');
+
+            return;
+        }
+
+        $administrator = User::firstOrCreate(
+            ['email' => $email],
+            ['name' => 'Administrador', 'password' => $password, 'email_verified_at' => now()],
+        );
+
+        $administrator->assignRole('admin');
     }
 }
