@@ -2,22 +2,35 @@
 
 Reglas tomadas de los formatos de Excel actuales. Las marcadas como **por confirmar** tienen datos contradictorios en los archivos y deben validarse con administración antes de programarlas.
 
+## Roles
+
+Se manejan con `spatie/laravel-permission`. No hay registro público: el administrador da de alta a los usuarios.
+
+| Rol           | En pantalla   | Qué hace                                                                                                           |
+| ------------- | ------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `requester`   | Solicitante   | Rol base. Captura requisiciones, registra el depósito que recibió y captura sus comprobaciones                     |
+| `coordinator` | Coordinador   | Lo del solicitante, más autorizar las requisiciones y comprobaciones de su equipo (`users.coordinator_id`)         |
+| `manager`     | Gerente       | Lo del solicitante, más la autorización final, revisar comprobaciones, cerrar saldos y ver todas las requisiciones |
+| `admin`       | Administrador | Todo, incluidos usuarios y catálogos                                                                               |
+
+- Nadie autoriza sus propias requisiciones ni comprobaciones.
+- El gerente deposita fuera del sistema; quien lo registra es el solicitante, porque el gerente no siempre tiene tiempo.
+
 ## Estados
 
 ### Requisición (`requisitions.status`)
 
-| Valor              | Significado                                      |
-| ------------------ | ------------------------------------------------ |
-| `draft`            | Borrador; el solicitante la está llenando        |
-| `submitted`        | Enviada; espera autorizaciones                   |
-| `approved`         | Autorizada por coordinador y administración      |
-| `rejected`         | Rechazada                                        |
-| `advance_paid`     | Administración registró el depósito del anticipo |
-| `advance_received` | El solicitante confirmó que recibió el depósito  |
-| `closed`           | Comprobada y con saldo liquidado                 |
-| `cancelled`        | Cancelada                                        |
+| Valor              | Significado                                     |
+| ------------------ | ----------------------------------------------- |
+| `draft`            | Borrador; el solicitante la está llenando       |
+| `submitted`        | Enviada; espera autorizaciones                  |
+| `approved`         | Autorizada por coordinador y gerente            |
+| `rejected`         | Rechazada                                       |
+| `advance_received` | El solicitante registró el depósito que recibió |
+| `closed`           | Comprobada y con saldo liquidado                |
+| `cancelled`        | Cancelada                                       |
 
-Mientras está en `submitted`, la etapa en la que va (coordinador o administración) se sabe por los registros de `approvals` (ver [autorizaciones](#autorizaciones-approvals)). Si alguien la devuelve (`returned`), regresa a `draft` para corregirla.
+Mientras está en `submitted`, la etapa en la que va (coordinador o gerente) se sabe por los registros de `approvals` (ver [autorizaciones](#autorizaciones-approvals)). Si alguien la devuelve (`returned`), regresa a `draft` para corregirla.
 
 ### Comprobación (`expense_reports.status`)
 
@@ -25,13 +38,15 @@ Mientras está en `submitted`, la etapa en la que va (coordinador o administraci
 
 ### Autorizaciones (`approvals`)
 
-| Etapa (`stage`)        | Quién la registra           | Cuándo                                     | Decisiones (`decision`)             |
-| ---------------------- | --------------------------- | ------------------------------------------ | ----------------------------------- |
-| `coordinator`          | Coordinador del solicitante | Al enviarse la requisición                 | `approved`, `rejected` o `returned` |
-| `administration`       | Administración              | Después del coordinador                    | `approved`, `rejected` o `returned` |
-| `deposit_confirmation` | **El solicitante**          | Cuando administración registra un depósito | `confirmed` o `not_received`        |
+| Etapa (`stage`)        | Quién la registra           | Cuándo                                | Decisiones (`decision`)             |
+| ---------------------- | --------------------------- | ------------------------------------- | ----------------------------------- |
+| `coordinator`          | Coordinador del solicitante | Al enviarse la requisición            | `approved`, `rejected` o `returned` |
+| `manager`              | Gerente                     | Después del coordinador               | `approved`, `rejected` o `returned` |
+| `deposit_confirmation` | **El solicitante**          | Cuando recibe un depósito del gerente | `confirmed` o `not_received`        |
 
-La confirmación del depósito equivale al "Pago recibido" del Excel. Se registra por cada depósito (`approvable_type` = pago), porque una requisición puede tener más de uno. Al confirmar el primero, la requisición pasa a `advance_received`; si marca `not_received`, administración debe revisarlo antes de continuar.
+La confirmación del depósito equivale al "Pago recibido" del Excel. El solicitante registra el depósito en `payments` (`type` = `advance`, con su comprobante) y su confirmación en `approvals` (`approvable_type` = `payment`). Se hace por cada depósito, porque una requisición puede tener más de uno. Al registrar el primero, la requisición pasa a `advance_received`; si marca `not_received`, el gerente debe revisarlo antes de continuar.
+
+En `approvable_type` se guardan alias cortos (`requisition`, `expense_report`, `payment`) y no el nombre de la clase; están definidos en el morph map de `AppServiceProvider`.
 
 ## Tipos de gasto
 

@@ -21,7 +21,8 @@ Sistema interno de DIAPSA para gestionar las **requisiciones de viáticos** y su
 ## Características principales
 
 - **Requisición de viáticos**: conceptos con cálculo automático (gasolina por distancia, comidas por persona y día, hospedaje por noche).
-- **Autorizaciones**: coordinador, administración y confirmación del depósito por parte del solicitante.
+- **Roles**: solicitante, coordinador, gerente y administrador; sin registro público.
+- **Autorizaciones**: coordinador, gerente y registro del depósito por parte del solicitante.
 - **Depósitos**: uno o varios anticipos por requisición.
 - **Comprobación de gastos**: facturas (CFDI) y tickets por tipo de gasto, sin facturas duplicadas.
 - **Presupuesto contra gastado**: por tipo de gasto, con el saldo final (reembolso, devolución o descuento de nómina).
@@ -191,16 +192,17 @@ La documentación del proyecto está en la carpeta [`docs/`](docs/):
 
 - Estructura base con Laravel 13 y el starter kit de React
 - Base de datos `diapsa_requisitions` y CI con MySQL
-- Análisis de los formatos de Excel y propuesta de base de datos
+- Análisis de los formatos de Excel y diseño de la base de datos
+- Migraciones y modelos
+- Roles y permisos, sin registro público
 
 ### 🔄 En desarrollo
 
-- Revisión del diseño de la base de datos con el encargado senior
 - Confirmación de reglas pendientes con administración
 
 ### 📋 Próximos pasos
 
-- Migraciones, modelos y catálogos
+- Catálogos y alta de usuarios
 - Captura de requisiciones y autorizaciones
 - Depósitos y comprobación de gastos
 

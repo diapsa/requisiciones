@@ -1,6 +1,6 @@
 # Base de datos
 
-Propuesta de esquema para `diapsa_requisitions` (MySQL 8.4). Está pendiente de revisión por el encargado senior antes de crear las migraciones.
+Esquema de `diapsa_requisitions` (MySQL 8.4), aprobado. Las migraciones están en `database/migrations`.
 
 ## Convenciones
 
@@ -184,7 +184,9 @@ erDiagram
     }
 ```
 
-`approvals` es una relación polimórfica: `approvable_type` indica si el registro es de una requisición, de una comprobación o de un pago (la confirmación del depósito que hace el solicitante), y `approvable_id` cuál.
+`approvals` es una relación polimórfica: `approvable_type` indica si el registro es de una requisición (`requisition`), de una comprobación (`expense_report`) o de un pago (`payment`, el depósito que registra el solicitante), y `approvable_id` cuál. Los alias están en el morph map de `AppServiceProvider`.
+
+Los roles y permisos usan las tablas de `spatie/laravel-permission` (`roles`, `permissions`, `model_has_roles`, `model_has_permissions` y `role_has_permissions`), que no aparecen en el diagrama.
 
 ## Diccionario de datos
 
@@ -215,7 +217,7 @@ Cuentas del empleado para depósitos y reembolsos. No se editan: si cambia la cu
 | account_number | text, cifrado               | Número de tarjeta, cuenta o CLABE        | Cuenta / Cta. bancaria   |
 | bank_city      | varchar(100), nulo          | Plaza                                    | Plaza                    |
 | branch_number  | varchar(20), nulo           | Sucursal                                 | Sucursal                 |
-| is_active      | boolean                     | Si se puede usar en nuevas requisiciones |                          |
+| is_active      | boolean, por defecto true   | Si se puede usar en nuevas requisiciones |                          |
 
 ### departments
 
@@ -242,28 +244,28 @@ Cuentas del empleado para depósitos y reembolsos. No se editan: si cambia la cu
 
 ### vehicles
 
-| Campo                | Tipo                | Descripción          | Origen                         |
-| -------------------- | ------------------- | -------------------- | ------------------------------ |
-| id                   | bigint unsigned, PK |                      |                                |
-| model                | varchar(100)        | Modelo del vehículo  | Etiqueta del concepto Traslado |
-| plate_number         | varchar(20), nulo   | Placas               |                                |
-| tank_capacity_liters | decimal(6,2)        | Capacidad del tanque | Auto litros del tanque         |
-| km_per_liter         | decimal(6,2)        | Rendimiento          | Eficiencia km/L                |
-| is_active            | boolean             | Si se puede elegir   |                                |
+| Campo                | Tipo                      | Descripción          | Origen                         |
+| -------------------- | ------------------------- | -------------------- | ------------------------------ |
+| id                   | bigint unsigned, PK       |                      |                                |
+| model                | varchar(100)              | Modelo del vehículo  | Etiqueta del concepto Traslado |
+| plate_number         | varchar(20), nulo         | Placas               |                                |
+| tank_capacity_liters | decimal(6,2)              | Capacidad del tanque | Auto litros del tanque         |
+| km_per_liter         | decimal(6,2)              | Rendimiento          | Eficiencia km/L                |
+| is_active            | boolean, por defecto true | Si se puede elegir   |                                |
 
 ### expense_types
 
 Un solo catálogo para los conceptos de la requisición y las categorías de la comprobación (ver el catálogo inicial en [reglas de negocio](reglas-de-negocio.md#tipos-de-gasto)).
 
-| Campo              | Tipo                | Descripción                                           | Origen                          |
-| ------------------ | ------------------- | ----------------------------------------------------- | ------------------------------- |
-| id                 | bigint unsigned, PK |                                                       |                                 |
-| code               | varchar(30), único  | Clave interna (`fuel`, `meals`…)                      |                                 |
-| name               | varchar(100)        | Nombre que se muestra                                 | Concepto / columna de categoría |
-| calculation_method | varchar(30)         | Cómo se calcula el importe en la requisición          | Fórmulas del Excel              |
-| default_unit       | varchar(20)         | Unidad por defecto                                    | Unidad                          |
-| is_requestable     | boolean             | Si se puede pedir en una requisición                  |                                 |
-| sort_order         | smallint unsigned   | Orden en pantalla, igual al de las columnas del Excel |                                 |
+| Campo              | Tipo                      | Descripción                                           | Origen                          |
+| ------------------ | ------------------------- | ----------------------------------------------------- | ------------------------------- |
+| id                 | bigint unsigned, PK       |                                                       |                                 |
+| code               | varchar(30), único        | Clave interna (`fuel`, `meals`…)                      |                                 |
+| name               | varchar(100)              | Nombre que se muestra                                 | Concepto / columna de categoría |
+| calculation_method | varchar(30)               | Cómo se calcula el importe en la requisición          | Fórmulas del Excel              |
+| default_unit       | varchar(20)               | Unidad por defecto                                    | Unidad                          |
+| is_requestable     | boolean, por defecto true | Si se puede pedir en una requisición                  |                                 |
+| sort_order         | smallint unsigned         | Orden en pantalla, igual al de las columnas del Excel |                                 |
 
 ### expense_rates
 
@@ -297,7 +299,7 @@ Tarifas con vigencia, para que un cambio no altere requisiciones anteriores.
 | requested_on        | date                                     | Fecha de solicitud                                             | Fecha de solicitud                     |
 | starts_on / ends_on | date                                     | Fechas del servicio                                            | Duración de servicio                   |
 | status              | varchar(30)                              | Estado (ver [reglas de negocio](reglas-de-negocio.md#estados)) |                                        |
-| approved_amount     | decimal(12,2)                            | Total autorizado; se fija al aprobar                           | Total depósito aprobado                |
+| approved_amount     | decimal(12,2), nulo                      | Total autorizado; nulo hasta que se aprueba                    | Total depósito aprobado                |
 | submitted_at        | timestamp, nulo                          | Cuándo el solicitante la envió                                 | Firma del solicitante                  |
 | terms_accepted_at   | timestamp, nulo                          | Cuándo aceptó los compromisos                                  | Compromisos                            |
 
@@ -380,10 +382,10 @@ Cada factura o ticket es un renglón, con su tipo de gasto. Sustituye a las colu
 | Campo           | Tipo                        | Descripción                                                                                        | Origen                                                                        |
 | --------------- | --------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | id              | bigint unsigned, PK         |                                                                                                    |                                                                               |
-| approvable_type | varchar(50)                 | Requisición, comprobación o pago                                                                   |                                                                               |
+| approvable_type | varchar(50)                 | `requisition`, `expense_report` o `payment`                                                        |                                                                               |
 | approvable_id   | bigint unsigned             | Id de la requisición, comprobación o pago                                                          |                                                                               |
 | approver_id     | bigint unsigned, FK → users | Quién autoriza o confirma; en la confirmación del depósito es el solicitante                       | Autoriza coordinador / administración / firma de autorización / pago recibido |
-| stage           | varchar(30)                 | `coordinator`, `administration` o `deposit_confirmation`                                           |                                                                               |
+| stage           | varchar(30)                 | `coordinator`, `manager` o `deposit_confirmation`                                                  |                                                                               |
 | decision        | varchar(20)                 | `approved`, `rejected` o `returned`; en la confirmación del depósito, `confirmed` o `not_received` |                                                                               |
 | comments        | text, nulo                  | Comentario                                                                                         |                                                                               |
 | decided_at      | timestamp                   | Cuándo se registró                                                                                 |                                                                               |

@@ -16,9 +16,9 @@ La instalación, los comandos, la integración continua y el flujo de ramas y co
 
 1. El solicitante captura la **requisición**: proyecto, fechas del servicio y los conceptos que necesita (gasolina, casetas, comidas, hospedaje, materiales…).
 2. El **coordinador** la autoriza.
-3. **Administración** la autoriza.
-4. Administración **deposita el anticipo** (puede haber más de un depósito).
-5. El solicitante **confirma que recibió el depósito**; queda registrado en las autorizaciones.
+3. El **gerente** la autoriza.
+4. El gerente **deposita el anticipo** fuera del sistema (puede haber más de un depósito).
+5. El solicitante **registra el depósito que recibió**, con su comprobante; queda registrado en las autorizaciones.
 6. Al regresar, el solicitante captura la **comprobación**: cada factura o ticket con su categoría.
 7. Se revisa la comprobación y se compara lo **autorizado contra lo gastado** por tipo de gasto.
 8. Se **cierra** con el saldo: DIAPSA reembolsa la diferencia, el empleado regresa el sobrante o se descuenta de nómina.
@@ -26,8 +26,8 @@ La instalación, los comandos, la integración continua y el flujo de ramas y co
 ## Estado actual
 
 - Estructura base generada con Laravel 13 y el starter kit de React (Inertia, TypeScript, Tailwind, Fortify).
-- Base de datos `diapsa_requisitions` en MySQL, por ahora solo con las tablas propias de Laravel.
-- El diseño de la base de datos de este documento es una **propuesta** pendiente de revisión por el encargado senior.
+- Base de datos `diapsa_requisitions` en MySQL con todas las tablas del [diagrama](base-de-datos.md), aprobado por el encargado senior.
+- Roles y permisos (`requester`, `coordinator`, `manager`, `admin`) sin registro público; ver [reglas de negocio](reglas-de-negocio.md#roles).
 
 ## Decisiones tomadas
 
