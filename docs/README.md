@@ -4,11 +4,11 @@ Sistema interno de DIAPSA para gestionar las **requisiciones de viáticos** (sol
 
 ## Índice
 
-| Documento | Contenido |
-|---|---|
-| [Análisis de los formatos de Excel](analisis-formatos-excel.md) | Qué contiene cada formato actual y los problemas que tienen |
-| [Base de datos](base-de-datos.md) | Convenciones, diagrama relacional y diccionario de datos |
-| [Reglas de negocio](reglas-de-negocio.md) | Flujo, estados, fórmulas de cálculo, políticas y puntos por confirmar |
+| Documento                                                       | Contenido                                                             |
+| --------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [Análisis de los formatos de Excel](analisis-formatos-excel.md) | Qué contiene cada formato actual y los problemas que tienen           |
+| [Base de datos](base-de-datos.md)                               | Convenciones, diagrama relacional y diccionario de datos              |
+| [Reglas de negocio](reglas-de-negocio.md)                       | Flujo, estados, fórmulas de cálculo, políticas y puntos por confirmar |
 
 La instalación, los comandos, la integración continua y el flujo de ramas y commits están en el [README principal](../README.md).
 
@@ -31,14 +31,14 @@ La instalación, los comandos, la integración continua y el flujo de ramas y co
 
 ## Decisiones tomadas
 
-| Tema | Decisión |
-|---|---|
-| Stack | Laravel 13 + Inertia 3 + React + TypeScript + Tailwind CSS 4, igual que los demás proyectos de DIAPSA |
-| Base de datos | MySQL; nombre `diapsa_requisitions` |
-| Idioma de la base de datos | Tablas, campos y valores de estados en **inglés** |
-| Idioma de la interfaz | **Español** (pantallas, mensajes, PDF) |
-| Pruebas | PHPUnit, como en `idap` y `komply` |
-| Ramas | Rama de trabajo → `develop` → `master` |
-| Commits | En inglés, formato `type(scope): description` (`feat`, `fix`, `chore`, `docs`…) |
+| Tema                       | Decisión                                                                                              |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Stack                      | Laravel 13 + Inertia 3 + React + TypeScript + Tailwind CSS 4, igual que los demás proyectos de DIAPSA |
+| Base de datos              | MySQL; nombre `diapsa_requisitions`                                                                   |
+| Idioma de la base de datos | Tablas, campos y valores de estados en **inglés**                                                     |
+| Idioma de la interfaz      | **Español** (pantallas, mensajes, PDF)                                                                |
+| Pruebas                    | PHPUnit, como en `idap` y `komply`                                                                    |
+| Ramas                      | Rama de trabajo → `develop` → `master`                                                                |
+| Commits                    | En inglés, formato `type(scope): description` (`feat`, `fix`, `chore`, `docs`…)                       |
 
 > El repositorio todavía es público. Esta documentación no incluye nombres de empleados, clientes ni datos bancarios reales, y así debe mantenerse.

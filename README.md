@@ -124,31 +124,31 @@ php artisan test
 
 - El flujo es: rama de trabajo → `develop` → `master`.
 - Crea ramas con nombres descriptivos en inglés, en kebab-case, a partir de `develop`:
-  - `feat/` para nuevas funcionalidades (`feat/requisitions-schema`).
-  - `fix/` para correcciones.
-  - `docs/` para documentación.
-  - `chore/` para configuración y mantenimiento.
-  - `refactor/` para reorganizar código sin cambiar su comportamiento.
-  - `test/` para pruebas.
+    - `feat/` para nuevas funcionalidades (`feat/requisitions-schema`).
+    - `fix/` para correcciones.
+    - `docs/` para documentación.
+    - `chore/` para configuración y mantenimiento.
+    - `refactor/` para reorganizar código sin cambiar su comportamiento.
+    - `test/` para pruebas.
 - Cada rama debe abordar un único cambio o funcionalidad.
 - Al terminar, abre un pull request hacia `develop`. Cuando se libera una versión, otro de `develop` hacia `master`.
 - No subas al repositorio:
-  - el `.env`;
-  - los formatos de Excel reales (tienen nombres, cuentas bancarias y datos de clientes);
-  - los archivos de Laravel Boost y de los agentes de IA (`AGENTS.md`, `boost.json`, `.claude/`…), que cada quien genera con `php artisan boost:install`.
+    - el `.env`;
+    - los formatos de Excel reales (tienen nombres, cuentas bancarias y datos de clientes);
+    - los archivos de Laravel Boost y de los agentes de IA (`AGENTS.md`, `boost.json`, `.claude/`…), que cada quien genera con `php artisan boost:install`.
 
 ## Commits
 
 Formato `type(scope): description`, en inglés y en imperativo:
 
-| Tipo | Uso |
-|---|---|
-| `feat` | Funcionalidad nueva |
-| `fix` | Corrección |
+| Tipo    | Uso                           |
+| ------- | ----------------------------- |
+| `feat`  | Funcionalidad nueva           |
+| `fix`   | Corrección                    |
 | `chore` | Configuración o mantenimiento |
-| `docs` | Documentación |
-| `style` | Cambios visuales sin lógica |
-| `test` | Pruebas |
+| `docs`  | Documentación                 |
+| `style` | Cambios visuales sin lógica   |
+| `test`  | Pruebas                       |
 
 Ejemplos: `feat(requisitions): calculate fuel cost by distance`, `fix(expenses): reject duplicated CFDI`.
 
@@ -188,15 +188,18 @@ La documentación del proyecto está en la carpeta [`docs/`](docs/):
 **Última actualización**: noviembre de 2026
 
 ### ✅ Completado
+
 - Estructura base con Laravel 13 y el starter kit de React
 - Base de datos `diapsa_requisitions` y CI con MySQL
 - Análisis de los formatos de Excel y propuesta de base de datos
 
 ### 🔄 En desarrollo
+
 - Revisión del diseño de la base de datos con el encargado senior
 - Confirmación de reglas pendientes con administración
 
 ### 📋 Próximos pasos
+
 - Migraciones, modelos y catálogos
 - Captura de requisiciones y autorizaciones
 - Depósitos y comprobación de gastos
