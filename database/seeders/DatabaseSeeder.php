@@ -18,6 +18,34 @@ class DatabaseSeeder extends Seeder
         $this->call(RolePermissionSeeder::class);
 
         $this->createAdministrator();
+
+        if (app()->isLocal()) {
+            $this->createTestUsers();
+        }
+    }
+
+    /**
+     * Create one verified user per role for local testing; all of them use the password "password".
+     */
+    private function createTestUsers(): void
+    {
+        $manager = $this->createTestUser('gerente@requisiciones.test', 'Gerente de Prueba', 'manager');
+        $coordinator = $this->createTestUser('coordinador@requisiciones.test', 'Coordinador de Prueba', 'coordinator');
+        $requester = $this->createTestUser('solicitante@requisiciones.test', 'Solicitante de Prueba', 'requester');
+
+        $requester->forceFill(['coordinator_id' => $coordinator->id])->save();
+    }
+
+    private function createTestUser(string $email, string $name, string $role): User
+    {
+        $user = User::firstOrCreate(
+            ['email' => $email],
+            ['name' => $name, 'password' => 'password', 'email_verified_at' => now()],
+        );
+
+        $user->assignRole($role);
+
+        return $user;
     }
 
     /**
