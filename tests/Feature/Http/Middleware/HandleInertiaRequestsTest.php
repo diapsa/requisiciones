@@ -31,7 +31,7 @@ class HandleInertiaRequestsTest extends TestCase
 
     public function test_shares_empty_roles_and_permissions_with_guests(): void
     {
-        $response = $this->get(route('home'));
+        $response = $this->get(route('login'));
 
         $response->assertOk();
         $this->assertSame([], $response->inertiaProps('auth.roles'));
