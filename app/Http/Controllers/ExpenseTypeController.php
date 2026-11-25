@@ -2,54 +2,75 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreExpenseTypeRequest;
+use App\Http\Requests\UpdateExpenseTypeRequest;
 use App\Models\ExpenseType;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
-/**
- * Campos y validaciones del diccionario de docs/base-de-datos.md.
- */
 class ExpenseTypeController extends Controller
 {
-    public function index(): JsonResponse
+    /**
+     * Show the expense types catalog in on-screen order.
+     */
+    public function index(): Response
     {
-        return response()->json(ExpenseType::query()->orderBy('id')->paginate());
+        return Inertia::render('expense-types/index', [
+            'expenseTypes' => ExpenseType::query()
+                ->select(['id', 'code', 'name', 'calculation_method', 'default_unit', 'is_requestable', 'sort_order'])
+                ->withCount(['expenseRates', 'requisitionItems', 'expenses'])
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(),
+        ]);
     }
 
-    public function show(ExpenseType $expenseType): JsonResponse
+    /**
+     * Store a new expense type.
+     */
+    public function store(StoreExpenseTypeRequest $request): RedirectResponse
     {
-        return response()->json($expenseType);
+        ExpenseType::query()->create($request->validated());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Tipo de gasto creado.']);
+
+        return to_route('expense-types.index');
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Update an expense type.
+     */
+    public function update(UpdateExpenseTypeRequest $request, ExpenseType $expenseType): RedirectResponse
     {
-        $data = $request->validate($this->rules());
+        $expenseType->update($request->validated());
 
-        return response()->json(ExpenseType::query()->create($data), 201);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Tipo de gasto actualizado.']);
+
+        return to_route('expense-types.index');
     }
 
-    public function update(Request $request, ExpenseType $expenseType): JsonResponse
+    /**
+     * Delete an expense type that has no rates and that no requisition or expense report uses.
+     */
+    public function destroy(ExpenseType $expenseType): RedirectResponse
     {
-        $attributes = $expenseType->getAttributes();
-        $rules = $this->rules($expenseType);
-        $data = Validator::make(array_replace($attributes, $request->only(array_keys($rules))), $rules)->validate();
-        $expenseType->update($data);
+        if ($expenseType->expenseRates()->exists()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'No se puede eliminar: tiene tarifas registradas.']);
 
-        return response()->json($expenseType);
-    }
+            return to_route('expense-types.index');
+        }
 
-    /** @return array<string, list<mixed>> */
-    private function rules(?ExpenseType $expenseType = null): array
-    {
-        return [
-            'code' => ['required', 'string', 'max:30', Rule::unique('expense_types', 'code')->ignore($expenseType)],
-            'name' => ['required', 'string', 'max:100'],
-            'calculation_method' => ['required', 'string', 'in:fuel_by_distance,per_person_meals,breakfast_reference,per_night,fixed'],
-            'default_unit' => ['required', 'string', 'max:20'],
-            'is_requestable' => ['required', 'boolean'],
-            'sort_order' => ['required', 'integer', 'between:0,65535'],
-        ];
+        if ($expenseType->requisitionItems()->exists() || $expenseType->expenses()->exists()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'No se puede eliminar: hay requisiciones o comprobaciones con este tipo de gasto.']);
+
+            return to_route('expense-types.index');
+        }
+
+        $expenseType->delete();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Tipo de gasto eliminado.']);
+
+        return to_route('expense-types.index');
     }
 }

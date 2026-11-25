@@ -14,6 +14,13 @@ class ExpenseType extends Model
     /** @use HasFactory<ExpenseTypeFactory> */
     use HasFactory;
 
+    /**
+     * How a requisition item of this type gets its amount (see docs/reglas-de-negocio.md).
+     *
+     * @var list<string>
+     */
+    public const CALCULATION_METHODS = ['fuel_by_distance', 'per_person_meals', 'breakfast_reference', 'per_night', 'fixed'];
+
     /** @return array<string, string> */
     protected function casts(): array
     {

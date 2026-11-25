@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BusinessUnitController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\ExpenseTypeController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('business-units', BusinessUnitController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('projects', ProjectController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('vehicles', VehicleController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('expense-types', ExpenseTypeController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });
 

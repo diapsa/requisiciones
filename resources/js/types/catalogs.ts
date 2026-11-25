@@ -27,3 +27,25 @@ export type Vehicle = {
     is_active: boolean;
     requisitions_count: number;
 };
+
+export type CalculationMethod =
+    | 'fuel_by_distance'
+    | 'per_person_meals'
+    | 'breakfast_reference'
+    | 'per_night'
+    | 'fixed';
+
+export type ExpenseType = {
+    id: number;
+    code: string;
+    name: string;
+    calculation_method: CalculationMethod;
+    default_unit: string;
+    is_requestable: boolean;
+    sort_order: number;
+    expense_rates_count: number;
+    requisition_items_count: number;
+    expenses_count: number;
+};
+
+export type ExpenseTypeOption = Pick<ExpenseType, 'id' | 'name'>;
