@@ -30,7 +30,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'coordinator_id'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
@@ -65,6 +65,18 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function approvals(): HasMany
     {
         return $this->hasMany(Approval::class, 'approver_id');
+    }
+
+    /**
+     * Whether the user appears in requisitions, approvals, bank accounts or as someone's coordinator.
+     * Deleting a user with history would break those records, so they have to stay.
+     */
+    public function hasHistory(): bool
+    {
+        return $this->requisitions()->withTrashed()->exists()
+            || $this->approvals()->exists()
+            || $this->bankAccounts()->exists()
+            || $this->coordinatedUsers()->exists();
     }
 
     /**
