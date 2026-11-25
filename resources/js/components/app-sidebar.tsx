@@ -2,19 +2,24 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     Building2,
     CarFront,
+    ChartColumn,
     ChevronRight,
     CircleDollarSign,
-    Folder,
+    ClipboardCheck,
+    ClipboardList,
     FolderKanban,
+    House,
     Landmark,
-    LayoutGrid,
     MapPin,
+    ReceiptText,
     Tags,
+    Users,
+    Wallet,
 } from 'lucide-react';
 import { useState } from 'react';
 import { SidebarLogo } from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
+import { NavMain, NavMainItem } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
     Collapsible,
@@ -26,13 +31,11 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarGroup,
+    SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarMenuSub,
-    SidebarMenuSubButton,
-    SidebarMenuSubItem,
     useSidebar,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
@@ -43,15 +46,24 @@ import { index as departmentsIndex } from '@/routes/departments';
 import { index as expenseRatesIndex } from '@/routes/expense-rates';
 import { index as expenseTypesIndex } from '@/routes/expense-types';
 import { index as projectsIndex } from '@/routes/projects';
+import { index as usersIndex } from '@/routes/users';
 import { index as vehiclesIndex } from '@/routes/vehicles';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Panel',
         href: dashboard(),
-        icon: LayoutGrid,
+        icon: House,
     },
+];
+
+const upcomingNavItems = [
+    { title: 'Requisiciones', icon: ClipboardList },
+    { title: 'Autorizaciones', icon: ClipboardCheck },
+    { title: 'Comprobaciones', icon: ReceiptText },
+    { title: 'Depósitos y saldos', icon: Wallet },
+    { title: 'Reportes', icon: ChartColumn },
 ];
 
 const catalogNavItems: NavItem[] = [
@@ -92,11 +104,18 @@ const catalogNavItems: NavItem[] = [
     },
 ];
 
+const usersNavItem: NavItem = {
+    title: 'Usuarios',
+    href: usersIndex(),
+    icon: Users,
+};
+
 const footerNavItems: NavItem[] = [];
 
 export function AppSidebar() {
     const { auth } = usePage().props;
     const canManageCatalogs = auth.permissions.includes('manage catalogs');
+    const canManageUsers = auth.permissions.includes('manage users');
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -118,8 +137,30 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={mainNavItems} label="General" />
+                <SidebarGroup className="px-2 py-0">
+                    <SidebarGroupLabel>Operación</SidebarGroupLabel>
+                    <SidebarMenu>
+                        {upcomingNavItems.map(({ title, icon: Icon }) => (
+                            <SidebarMenuItem key={title}>
+                                <SidebarMenuButton
+                                    asChild
+                                    tooltip={`${title} · Próximamente`}
+                                    className="cursor-default text-sidebar-foreground/60 hover:bg-transparent hover:text-sidebar-foreground/60"
+                                >
+                                    <span>
+                                        <Icon aria-hidden="true" />
+                                        <span>{title}</span>
+                                    </span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
+                </SidebarGroup>
                 {canManageCatalogs && <NavCatalogs />}
+                {canManageUsers && (
+                    <NavMain items={[usersNavItem]} label="Administración" />
+                )}
             </SidebarContent>
 
             <SidebarFooter>
@@ -130,79 +171,40 @@ export function AppSidebar() {
     );
 }
 
+/**
+ * Catalogs get their own section, separate from daily operation and from user administration.
+ * Its title folds the list; with the sidebar reduced to icons, every catalog icon stays visible.
+ */
 function NavCatalogs() {
     const { isCurrentUrl } = useCurrentUrl();
-    const { isMobile, state, setOpen, setOpenMobile } = useSidebar();
+    const { isMobile, state } = useSidebar();
     const hasActiveCatalog = catalogNavItems.some((item) =>
         isCurrentUrl(item.href),
     );
     const [catalogsOpen, setCatalogsOpen] = useState(hasActiveCatalog);
     const isIconSidebar = !isMobile && state === 'collapsed';
 
-    function handleOpenChange(open: boolean) {
-        setCatalogsOpen(open);
-
-        if (open && isIconSidebar) {
-            setOpen(true);
-        }
-    }
-
     return (
-        <SidebarGroup className="px-2 py-0">
-            <SidebarMenu>
-                <Collapsible
-                    asChild
-                    open={catalogsOpen && !isIconSidebar}
-                    onOpenChange={handleOpenChange}
-                >
-                    <SidebarMenuItem>
-                        <CollapsibleTrigger asChild>
-                            <SidebarMenuButton
-                                type="button"
-                                tooltip="Catálogos"
-                                isActive={hasActiveCatalog && isIconSidebar}
-                                className="group/catalogs-trigger"
-                            >
-                                <Folder />
-                                <span>Catálogos</span>
-                                <ChevronRight className="ml-auto transition-transform group-data-[collapsible=icon]:hidden group-data-[state=open]/catalogs-trigger:rotate-90" />
-                            </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent asChild>
-                            <SidebarMenuSub>
-                                {catalogNavItems.map((item) => {
-                                    const isActive = isCurrentUrl(item.href);
-
-                                    return (
-                                        <SidebarMenuSubItem key={item.title}>
-                                            <SidebarMenuSubButton
-                                                asChild
-                                                isActive={isActive}
-                                            >
-                                                <Link
-                                                    href={item.href}
-                                                    aria-current={
-                                                        isActive
-                                                            ? 'page'
-                                                            : undefined
-                                                    }
-                                                    onSuccess={() =>
-                                                        setOpenMobile(false)
-                                                    }
-                                                    prefetch
-                                                >
-                                                    {item.icon && <item.icon />}
-                                                    <span>{item.title}</span>
-                                                </Link>
-                                            </SidebarMenuSubButton>
-                                        </SidebarMenuSubItem>
-                                    );
-                                })}
-                            </SidebarMenuSub>
-                        </CollapsibleContent>
-                    </SidebarMenuItem>
-                </Collapsible>
-            </SidebarMenu>
-        </SidebarGroup>
+        <Collapsible
+            asChild
+            open={catalogsOpen || isIconSidebar}
+            onOpenChange={setCatalogsOpen}
+        >
+            <SidebarGroup className="px-2 py-0">
+                <SidebarGroupLabel asChild>
+                    <CollapsibleTrigger className="group/catalogs-trigger w-full hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                        Catálogos
+                        <ChevronRight className="ml-auto transition-transform group-data-[state=open]/catalogs-trigger:rotate-90" />
+                    </CollapsibleTrigger>
+                </SidebarGroupLabel>
+                <CollapsibleContent>
+                    <SidebarMenu>
+                        {catalogNavItems.map((item) => (
+                            <NavMainItem key={item.title} item={item} />
+                        ))}
+                    </SidebarMenu>
+                </CollapsibleContent>
+            </SidebarGroup>
+        </Collapsible>
     );
 }
