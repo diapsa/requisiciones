@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BusinessUnitController;
 use App\Http\Controllers\DepartmentController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('can:manage catalogs')->group(function () {
         Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('business-units', BusinessUnitController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });
 

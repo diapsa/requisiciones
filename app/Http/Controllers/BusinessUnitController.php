@@ -2,50 +2,68 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreBusinessUnitRequest;
+use App\Http\Requests\UpdateBusinessUnitRequest;
 use App\Models\BusinessUnit;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
-/**
- * Campos y validaciones del diccionario de docs/base-de-datos.md.
- */
 class BusinessUnitController extends Controller
 {
-    public function index(): JsonResponse
+    /**
+     * Show the business units catalog.
+     */
+    public function index(): Response
     {
-        return response()->json(BusinessUnit::query()->orderBy('id')->paginate());
+        return Inertia::render('business-units/index', [
+            'businessUnits' => BusinessUnit::query()
+                ->select(['id', 'code', 'name'])
+                ->withCount(['requisitions' => fn ($query) => $query->withTrashed()])
+                ->orderBy('name')
+                ->get(),
+        ]);
     }
 
-    public function show(BusinessUnit $businessUnit): JsonResponse
+    /**
+     * Store a new business unit.
+     */
+    public function store(StoreBusinessUnitRequest $request): RedirectResponse
     {
-        return response()->json($businessUnit);
+        BusinessUnit::query()->create($request->validated());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Unidad de negocio creada.']);
+
+        return to_route('business-units.index');
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Update a business unit's code and name.
+     */
+    public function update(UpdateBusinessUnitRequest $request, BusinessUnit $businessUnit): RedirectResponse
     {
-        $data = $request->validate($this->rules());
+        $businessUnit->update($request->validated());
 
-        return response()->json(BusinessUnit::query()->create($data), 201);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Unidad de negocio actualizada.']);
+
+        return to_route('business-units.index');
     }
 
-    public function update(Request $request, BusinessUnit $businessUnit): JsonResponse
+    /**
+     * Delete a business unit that no requisition uses, including soft-deleted ones.
+     */
+    public function destroy(BusinessUnit $businessUnit): RedirectResponse
     {
-        $attributes = $businessUnit->getAttributes();
-        $rules = $this->rules($businessUnit);
-        $data = Validator::make(array_replace($attributes, $request->only(array_keys($rules))), $rules)->validate();
-        $businessUnit->update($data);
+        if ($businessUnit->requisitions()->withTrashed()->exists()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'No se puede eliminar: hay requisiciones con esta unidad de negocio.']);
 
-        return response()->json($businessUnit);
-    }
+            return to_route('business-units.index');
+        }
 
-    /** @return array<string, list<mixed>> */
-    private function rules(?BusinessUnit $businessUnit = null): array
-    {
-        return [
-            'code' => ['required', 'string', 'max:10', Rule::unique('business_units', 'code')->ignore($businessUnit)],
-            'name' => ['required', 'string', 'max:100'],
-        ];
+        $businessUnit->delete();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Unidad de negocio eliminada.']);
+
+        return to_route('business-units.index');
     }
 }
