@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\BusinessUnitController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ExpenseRateController;
@@ -24,6 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('vehicles', VehicleController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('expense-types', ExpenseTypeController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('expense-rates', ExpenseRateController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('bank-accounts', BankAccountController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });
 

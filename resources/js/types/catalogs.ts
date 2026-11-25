@@ -59,3 +59,23 @@ export type ExpenseRate = {
     valid_until: string | null;
     expense_type: ExpenseTypeOption;
 };
+
+export type BankAccountType = 'debit_card' | 'account' | 'clabe';
+
+export type UserOption = {
+    id: number;
+    name: string;
+};
+
+export type BankAccount = {
+    id: number;
+    user: UserOption;
+    bank_name: string;
+    account_holder: string;
+    account_type: BankAccountType;
+    account_number_last_digits: string;
+    bank_city: string | null;
+    branch_number: string | null;
+    is_active: boolean;
+    requisitions_count: number;
+};

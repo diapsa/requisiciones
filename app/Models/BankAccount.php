@@ -16,6 +16,9 @@ class BankAccount extends Model
     use HasFactory;
 
     /** @var list<string> */
+    public const ACCOUNT_TYPES = ['debit_card', 'account', 'clabe'];
+
+    /** @var list<string> */
     protected $hidden = ['account_number'];
 
     /** @return array<string, string> */
