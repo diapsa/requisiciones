@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Database\Factories\ExpenseRateFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -12,6 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['expense_type_id', 'name', 'amount', 'valid_from', 'valid_until'])]
 class ExpenseRate extends Model
 {
+    /** @use HasFactory<ExpenseRateFactory> */
+    use HasFactory;
+
     /** @return array<string, string> */
     protected function casts(): array
     {

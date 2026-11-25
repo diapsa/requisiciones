@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use Database\Factories\ExpenseTypeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['code', 'name', 'calculation_method', 'default_unit', 'is_requestable', 'sort_order'])]
 class ExpenseType extends Model
 {
+    /** @use HasFactory<ExpenseTypeFactory> */
+    use HasFactory;
+
     /** @return array<string, string> */
     protected function casts(): array
     {

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Database\Factories\VehicleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -13,6 +15,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['model', 'plate_number', 'tank_capacity_liters', 'km_per_liter', 'is_active'])]
 class Vehicle extends Model
 {
+    /** @use HasFactory<VehicleFactory> */
+    use HasFactory;
+
     /** @return array<string, string> */
     protected function casts(): array
     {
