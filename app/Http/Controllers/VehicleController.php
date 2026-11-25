@@ -2,52 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreVehicleRequest;
+use App\Http\Requests\UpdateVehicleRequest;
 use App\Models\Vehicle;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response;
 
-/**
- * Campos y validaciones del diccionario de docs/base-de-datos.md.
- */
 class VehicleController extends Controller
 {
-    public function index(): JsonResponse
+    /**
+     * Show the vehicles catalog, active vehicles first, with how many requisitions use each one.
+     */
+    public function index(): Response
     {
-        return response()->json(Vehicle::query()->orderBy('id')->paginate());
+        return Inertia::render('vehicles/index', [
+            'vehicles' => Vehicle::query()
+                ->select(['id', 'model', 'plate_number', 'tank_capacity_liters', 'km_per_liter', 'is_active'])
+                ->withCount(['requisitionItems as requisitions_count' => fn (Builder $query) => $query->select(DB::raw('count(distinct requisition_id)'))])
+                ->orderByDesc('is_active')
+                ->orderBy('model')
+                ->get(),
+        ]);
     }
 
-    public function show(Vehicle $vehicle): JsonResponse
+    /**
+     * Store a new vehicle.
+     */
+    public function store(StoreVehicleRequest $request): RedirectResponse
     {
-        return response()->json($vehicle);
+        Vehicle::query()->create($request->validated());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Vehículo creado.']);
+
+        return to_route('vehicles.index');
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Update a vehicle. Requisition items keep their own copy of the tank and efficiency figures.
+     */
+    public function update(UpdateVehicleRequest $request, Vehicle $vehicle): RedirectResponse
     {
-        $data = $request->validate($this->rules());
+        $vehicle->update($request->validated());
 
-        return response()->json(Vehicle::query()->create($data), 201);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Vehículo actualizado.']);
+
+        return to_route('vehicles.index');
     }
 
-    public function update(Request $request, Vehicle $vehicle): JsonResponse
+    /**
+     * Delete a vehicle that no requisition item uses; a used one can only be deactivated.
+     */
+    public function destroy(Vehicle $vehicle): RedirectResponse
     {
-        $attributes = $vehicle->getAttributes();
-        $rules = $this->rules($vehicle);
-        $data = Validator::make(array_replace($attributes, $request->only(array_keys($rules))), $rules)->validate();
-        $vehicle->update($data);
+        if ($vehicle->requisitionItems()->exists()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'No se puede eliminar: hay requisiciones con este vehículo. Desactívalo en su lugar.']);
 
-        return response()->json($vehicle);
-    }
+            return to_route('vehicles.index');
+        }
 
-    /** @return array<string, list<mixed>> */
-    private function rules(?Vehicle $vehicle = null): array
-    {
-        return [
-            'model' => ['required', 'string', 'max:100'],
-            'plate_number' => ['nullable', 'string', 'max:20'],
-            'tank_capacity_liters' => ['required', 'numeric', 'between:0,9999.99'],
-            'km_per_liter' => ['required', 'numeric', 'between:0,9999.99'],
-            'is_active' => ['required', 'boolean'],
-        ];
+        $vehicle->delete();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Vehículo eliminado.']);
+
+        return to_route('vehicles.index');
     }
 }

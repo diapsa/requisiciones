@@ -17,3 +17,13 @@ export type Project = {
     name: string;
     requisitions_count: number;
 };
+
+export type Vehicle = {
+    id: number;
+    model: string;
+    plate_number: string | null;
+    tank_capacity_liters: string;
+    km_per_liter: string;
+    is_active: boolean;
+    requisitions_count: number;
+};

@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusinessUnitController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('business-units', BusinessUnitController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('projects', ProjectController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('vehicles', VehicleController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });
 
