@@ -20,7 +20,7 @@ class ExpenseRateFactory extends Factory
     {
         return [
             'expense_type_id' => ExpenseType::factory(),
-            'name' => ucfirst(fake()->words(3, true)),
+            'name' => rtrim(fake()->sentence(3, false), '.'),
             'amount' => fake()->randomFloat(2, 50, 500),
             'valid_from' => '2026-01-01',
             'valid_until' => null,

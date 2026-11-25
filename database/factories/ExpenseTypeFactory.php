@@ -19,7 +19,7 @@ class ExpenseTypeFactory extends Factory
     {
         return [
             'code' => fake()->unique()->lexify('type_????'),
-            'name' => ucfirst(fake()->unique()->words(2, true)),
+            'name' => rtrim(fake()->unique()->sentence(2, false), '.'),
             'calculation_method' => 'fixed',
             'default_unit' => 'ÚNICO',
             'is_requestable' => true,

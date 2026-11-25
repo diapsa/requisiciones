@@ -18,7 +18,7 @@ class DepartmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => ucfirst(fake()->unique()->words(2, true)),
+            'name' => rtrim(fake()->unique()->sentence(2, false), '.'),
         ];
     }
 }
