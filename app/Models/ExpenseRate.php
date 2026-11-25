@@ -22,8 +22,8 @@ class ExpenseRate extends Model
     {
         return [
             'amount' => 'decimal:2',
-            'valid_from' => 'date',
-            'valid_until' => 'date',
+            'valid_from' => 'date:Y-m-d',
+            'valid_until' => 'date:Y-m-d',
         ];
     }
 

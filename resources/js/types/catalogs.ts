@@ -49,3 +49,13 @@ export type ExpenseType = {
 };
 
 export type ExpenseTypeOption = Pick<ExpenseType, 'id' | 'name'>;
+
+export type ExpenseRate = {
+    id: number;
+    expense_type_id: number;
+    name: string;
+    amount: string;
+    valid_from: string;
+    valid_until: string | null;
+    expense_type: ExpenseTypeOption;
+};
