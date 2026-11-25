@@ -13,6 +13,7 @@ class ResetUserPassword implements ResetsUserPasswords
 
     /**
      * Validate and reset the user's forgotten password.
+     * The link came by email, so it also activates an invited user who lost their invitation.
      *
      * @param  array<string, string>  $input
      */
@@ -25,5 +26,9 @@ class ResetUserPassword implements ResetsUserPasswords
         $user->forceFill([
             'password' => $input['password'],
         ])->save();
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
     }
 }
