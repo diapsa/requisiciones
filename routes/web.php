@@ -7,6 +7,8 @@ use App\Http\Controllers\ExpenseRateController;
 use App\Http\Controllers\ExpenseTypeController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserInvitationController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +34,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('expense-types', ExpenseTypeController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('expense-rates', ExpenseRateController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('bank-accounts', BankAccountController::class)->only(['index', 'store', 'update', 'destroy']);
+    });
+
+    Route::middleware('can:manage users')->group(function () {
+        Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::post('users/{user}/invitation', [UserInvitationController::class, 'store'])->name('users.invitation.store');
     });
 });
 
