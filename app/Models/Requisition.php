@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * @property string $approved_amount
+ * @property string|null $approved_amount
  */
 #[Fillable(['number', 'sequence', 'suffix', 'parent_id', 'requester_id', 'bank_account_id', 'department_id', 'business_unit_id', 'project_id', 'service_description', 'service_location', 'requested_on', 'starts_on', 'ends_on', 'status', 'approved_amount', 'submitted_at', 'terms_accepted_at'])]
 class Requisition extends Model
