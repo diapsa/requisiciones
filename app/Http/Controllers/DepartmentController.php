@@ -2,48 +2,68 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreDepartmentRequest;
+use App\Http\Requests\UpdateDepartmentRequest;
 use App\Models\Department;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
-/**
- * Campos y validaciones del diccionario de docs/base-de-datos.md.
- */
 class DepartmentController extends Controller
 {
-    public function index(): JsonResponse
+    /**
+     * Show the departments catalog.
+     */
+    public function index(): Response
     {
-        return response()->json(Department::query()->orderBy('id')->paginate());
+        return Inertia::render('departments/index', [
+            'departments' => Department::query()
+                ->select(['id', 'name'])
+                ->withCount(['requisitions' => fn ($query) => $query->withTrashed()])
+                ->orderBy('name')
+                ->get(),
+        ]);
     }
 
-    public function show(Department $department): JsonResponse
+    /**
+     * Store a new department.
+     */
+    public function store(StoreDepartmentRequest $request): RedirectResponse
     {
-        return response()->json($department);
+        Department::query()->create($request->validated());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Departamento creado.']);
+
+        return to_route('departments.index');
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Rename a department.
+     */
+    public function update(UpdateDepartmentRequest $request, Department $department): RedirectResponse
     {
-        $data = $request->validate($this->rules());
+        $department->update($request->validated());
 
-        return response()->json(Department::query()->create($data), 201);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Departamento actualizado.']);
+
+        return to_route('departments.index');
     }
 
-    public function update(Request $request, Department $department): JsonResponse
+    /**
+     * Delete a department that no requisition uses, including soft-deleted ones.
+     */
+    public function destroy(Department $department): RedirectResponse
     {
-        $attributes = $department->getAttributes();
-        $rules = $this->rules($department);
-        $data = Validator::make(array_replace($attributes, $request->only(array_keys($rules))), $rules)->validate();
-        $department->update($data);
+        if ($department->requisitions()->withTrashed()->exists()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'No se puede eliminar: hay requisiciones con este departamento.']);
 
-        return response()->json($department);
-    }
+            return to_route('departments.index');
+        }
 
-    /** @return array<string, list<mixed>> */
-    private function rules(?Department $department = null): array
-    {
-        return [
-            'name' => ['required', 'string', 'max:100'],
-        ];
+        $department->delete();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Departamento eliminado.']);
+
+        return to_route('departments.index');
     }
 }

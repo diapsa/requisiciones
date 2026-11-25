@@ -2,52 +2,85 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreBankAccountRequest;
+use App\Http\Requests\UpdateBankAccountRequest;
 use App\Models\BankAccount;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 
-/**
- * Campos y validaciones del diccionario de docs/base-de-datos.md.
- */
 class BankAccountController extends Controller
 {
-    public function index(): JsonResponse
+    /**
+     * Show the employees' bank accounts. Only the last digits of each account number leave the server.
+     */
+    public function index(): Response
     {
-        return response()->json(BankAccount::query()->orderBy('id')->paginate());
+        return Inertia::render('bank-accounts/index', [
+            'bankAccounts' => BankAccount::query()
+                ->with('user:id,name')
+                ->withCount(['requisitions' => fn ($query) => $query->withTrashed()])
+                ->orderBy(User::query()->select('name')->whereColumn('users.id', 'bank_accounts.user_id'))
+                ->orderByDesc('is_active')
+                ->orderByDesc('id')
+                ->get()
+                ->map(fn (BankAccount $bankAccount): array => [
+                    'id' => $bankAccount->id,
+                    'user' => $bankAccount->user->only(['id', 'name']),
+                    'bank_name' => $bankAccount->bank_name,
+                    'account_holder' => $bankAccount->account_holder,
+                    'account_type' => $bankAccount->account_type,
+                    'account_number_last_digits' => Str::substr($bankAccount->account_number, -4),
+                    'bank_city' => $bankAccount->bank_city,
+                    'branch_number' => $bankAccount->branch_number,
+                    'is_active' => $bankAccount->is_active,
+                    'requisitions_count' => $bankAccount->requisitions_count,
+                ]),
+            'users' => User::query()->select(['id', 'name'])->orderBy('name')->get(),
+        ]);
     }
 
-    public function show(BankAccount $bankAccount): JsonResponse
+    /**
+     * Register a new, active bank account for an employee.
+     */
+    public function store(StoreBankAccountRequest $request): RedirectResponse
     {
-        return response()->json($bankAccount);
+        BankAccount::query()->create([...$request->validated(), 'is_active' => true]);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Cuenta bancaria registrada.']);
+
+        return to_route('bank-accounts.index');
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Activate or deactivate a bank account. Its details never change.
+     */
+    public function update(UpdateBankAccountRequest $request, BankAccount $bankAccount): RedirectResponse
     {
-        $data = $request->validate($this->rules());
+        $bankAccount->update($request->validated());
 
-        return response()->json(BankAccount::query()->create($data), 201);
+        Inertia::flash('toast', ['type' => 'success', 'message' => $bankAccount->is_active ? 'Cuenta activada.' : 'Cuenta desactivada.']);
+
+        return to_route('bank-accounts.index');
     }
 
-    // Las cuentas anteriores se conservan: se desactivan en lugar de editarlas.
-    public function deactivate(BankAccount $bankAccount): JsonResponse
+    /**
+     * Delete a bank account that no requisition was paid to; a used one can only be deactivated.
+     */
+    public function destroy(BankAccount $bankAccount): RedirectResponse
     {
-        $bankAccount->update(['is_active' => false]);
+        if ($bankAccount->requisitions()->withTrashed()->exists()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'No se puede eliminar: hay requisiciones con esta cuenta. Desactívala en su lugar.']);
 
-        return response()->json($bankAccount);
-    }
+            return to_route('bank-accounts.index');
+        }
 
-    /** @return array<string, list<mixed>> */
-    private function rules(?BankAccount $bankAccount = null): array
-    {
-        return [
-            'user_id' => ['required', 'integer', 'exists:users,id'],
-            'bank_name' => ['required', 'string', 'max:100'],
-            'account_holder' => ['required', 'string', 'max:150'],
-            'account_type' => ['required', 'in:debit_card,account,clabe'],
-            'account_number' => ['required', 'string'],
-            'bank_city' => ['nullable', 'string', 'max:100'],
-            'branch_number' => ['nullable', 'string', 'max:20'],
-            'is_active' => ['required', 'boolean'],
-        ];
+        $bankAccount->delete();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Cuenta bancaria eliminada.']);
+
+        return to_route('bank-accounts.index');
     }
 }

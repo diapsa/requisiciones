@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Database\Factories\RequisitionItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -18,6 +20,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['requisition_id', 'expense_type_id', 'vehicle_id', 'description', 'people_count', 'origin', 'destination', 'distance_km', 'tank_capacity_liters', 'km_per_liter', 'fuel_price_per_liter', 'days', 'meals_per_day', 'unit_price', 'quantity', 'unit', 'amount'])]
 class RequisitionItem extends Model
 {
+    /** @use HasFactory<RequisitionItemFactory> */
+    use HasFactory;
+
     /** @return array<string, string> */
     protected function casts(): array
     {

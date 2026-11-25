@@ -2,50 +2,68 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProjectRequest;
+use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
-/**
- * Campos y validaciones del diccionario de docs/base-de-datos.md.
- */
 class ProjectController extends Controller
 {
-    public function index(): JsonResponse
+    /**
+     * Show the projects catalog.
+     */
+    public function index(): Response
     {
-        return response()->json(Project::query()->orderBy('id')->paginate());
+        return Inertia::render('projects/index', [
+            'projects' => Project::query()
+                ->select(['id', 'code', 'name'])
+                ->withCount(['requisitions' => fn ($query) => $query->withTrashed()])
+                ->orderBy('name')
+                ->get(),
+        ]);
     }
 
-    public function show(Project $project): JsonResponse
+    /**
+     * Store a new project.
+     */
+    public function store(StoreProjectRequest $request): RedirectResponse
     {
-        return response()->json($project);
+        Project::query()->create($request->validated());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Proyecto creado.']);
+
+        return to_route('projects.index');
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Update a project's code and name.
+     */
+    public function update(UpdateProjectRequest $request, Project $project): RedirectResponse
     {
-        $data = $request->validate($this->rules());
+        $project->update($request->validated());
 
-        return response()->json(Project::query()->create($data), 201);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Proyecto actualizado.']);
+
+        return to_route('projects.index');
     }
 
-    public function update(Request $request, Project $project): JsonResponse
+    /**
+     * Delete a project that no requisition uses, including soft-deleted ones.
+     */
+    public function destroy(Project $project): RedirectResponse
     {
-        $attributes = $project->getAttributes();
-        $rules = $this->rules($project);
-        $data = Validator::make(array_replace($attributes, $request->only(array_keys($rules))), $rules)->validate();
-        $project->update($data);
+        if ($project->requisitions()->withTrashed()->exists()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'No se puede eliminar: hay requisiciones con este proyecto.']);
 
-        return response()->json($project);
-    }
+            return to_route('projects.index');
+        }
 
-    /** @return array<string, list<mixed>> */
-    private function rules(?Project $project = null): array
-    {
-        return [
-            'code' => ['required', 'string', 'max:50', Rule::unique('projects', 'code')->ignore($project)],
-            'name' => ['required', 'string', 'max:150'],
-        ];
+        $project->delete();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Proyecto eliminado.']);
+
+        return to_route('projects.index');
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Database\Factories\RequisitionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,7 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['number', 'sequence', 'suffix', 'parent_id', 'requester_id', 'bank_account_id', 'department_id', 'business_unit_id', 'project_id', 'service_description', 'service_location', 'requested_on', 'starts_on', 'ends_on', 'status', 'approved_amount', 'submitted_at', 'terms_accepted_at'])]
 class Requisition extends Model
 {
-    use SoftDeletes;
+    /** @use HasFactory<RequisitionFactory> */
+    use HasFactory, SoftDeletes;
 
     /** @return array<string, string> */
     protected function casts(): array

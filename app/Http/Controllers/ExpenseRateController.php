@@ -2,52 +2,70 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreExpenseRateRequest;
+use App\Http\Requests\UpdateExpenseRateRequest;
 use App\Models\ExpenseRate;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Models\ExpenseType;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
-/**
- * Campos y validaciones del diccionario de docs/base-de-datos.md.
- */
 class ExpenseRateController extends Controller
 {
-    public function index(): JsonResponse
+    /**
+     * Show the expense rates grouped by expense type, newest validity first.
+     */
+    public function index(): Response
     {
-        return response()->json(ExpenseRate::query()->orderBy('id')->paginate());
+        return Inertia::render('expense-rates/index', [
+            'expenseRates' => ExpenseRate::query()
+                ->select(['id', 'expense_type_id', 'name', 'amount', 'valid_from', 'valid_until'])
+                ->with('expenseType:id,name')
+                ->orderBy(ExpenseType::query()->select('sort_order')->whereColumn('expense_types.id', 'expense_rates.expense_type_id'))
+                ->orderBy('name')
+                ->orderByDesc('valid_from')
+                ->get(),
+            'expenseTypes' => ExpenseType::query()
+                ->select(['id', 'name'])
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(),
+        ]);
     }
 
-    public function show(ExpenseRate $expenseRate): JsonResponse
+    /**
+     * Store a new expense rate.
+     */
+    public function store(StoreExpenseRateRequest $request): RedirectResponse
     {
-        return response()->json($expenseRate);
+        ExpenseRate::query()->create($request->validated());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Tarifa creada.']);
+
+        return to_route('expense-rates.index');
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Update an expense rate. Requisition items keep the amounts they were requested with.
+     */
+    public function update(UpdateExpenseRateRequest $request, ExpenseRate $expenseRate): RedirectResponse
     {
-        $data = $request->validate($this->rules());
+        $expenseRate->update($request->validated());
 
-        return response()->json(ExpenseRate::query()->create($data), 201);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Tarifa actualizada.']);
+
+        return to_route('expense-rates.index');
     }
 
-    public function update(Request $request, ExpenseRate $expenseRate): JsonResponse
+    /**
+     * Delete an expense rate. Nothing references a rate, so it can always be deleted.
+     */
+    public function destroy(ExpenseRate $expenseRate): RedirectResponse
     {
-        $attributes = $expenseRate->getAttributes();
-        $rules = $this->rules($expenseRate);
-        $data = Validator::make(array_replace($attributes, $request->only(array_keys($rules))), $rules)->validate();
-        $expenseRate->update($data);
+        $expenseRate->delete();
 
-        return response()->json($expenseRate);
-    }
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Tarifa eliminada.']);
 
-    /** @return array<string, list<mixed>> */
-    private function rules(?ExpenseRate $expenseRate = null): array
-    {
-        return [
-            'expense_type_id' => ['required', 'integer', 'exists:expense_types,id'],
-            'name' => ['required', 'string', 'max:100'],
-            'amount' => ['required', 'numeric', 'between:-9999999999.99,9999999999.99'],
-            'valid_from' => ['required', 'date'],
-            'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
-        ];
+        return to_route('expense-rates.index');
     }
 }
