@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Database\Factories\BankAccountFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +12,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['user_id', 'bank_name', 'account_holder', 'account_type', 'account_number', 'bank_city', 'branch_number', 'is_active'])]
 class BankAccount extends Model
 {
+    /** @use HasFactory<BankAccountFactory> */
+    use HasFactory;
+
     /** @var list<string> */
     protected $hidden = ['account_number'];
 
