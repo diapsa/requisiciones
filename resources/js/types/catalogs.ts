@@ -10,3 +10,10 @@ export type BusinessUnit = {
     name: string;
     requisitions_count: number;
 };
+
+export type Project = {
+    id: number;
+    code: string;
+    name: string;
+    requisitions_count: number;
+};

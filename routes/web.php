@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BusinessUnitController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\ProjectController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('can:manage catalogs')->group(function () {
         Route::resource('departments', DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('business-units', BusinessUnitController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('projects', ProjectController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });
 
