@@ -13,7 +13,7 @@ class CreateUser
      * Create a pending user with one role. There is no public registration: the administrator registers everyone,
      * and the account stays inactive until the user chooses a password from the emailed invitation.
      *
-     * @param  array{name: string, email: string, role: string, coordinator_id: int|string|null}  $attributes
+     * @param  array{name: string, email: string, role: string, coordinator_id: int|null}  $attributes
      */
     public function handle(array $attributes): User
     {

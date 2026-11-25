@@ -35,7 +35,7 @@ class InvitationController extends Controller
      */
     public function store(AcceptInvitationRequest $request, AcceptInvitation $acceptInvitation): RedirectResponse
     {
-        if (! $acceptInvitation->handle($request->validated())) {
+        if (! $acceptInvitation->handle($request->credentials())) {
             throw ValidationException::withMessages([
                 'email' => 'El enlace venció o ya se usó. Pide al administrador que te reenvíe la invitación.',
             ]);

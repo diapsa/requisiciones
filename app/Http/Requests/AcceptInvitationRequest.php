@@ -37,4 +37,18 @@ class AcceptInvitationRequest extends FormRequest
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ];
     }
+
+    /**
+     * The validated invitation link and chosen password, with the types AcceptInvitation expects.
+     *
+     * @return array{email: string, token: string, password: string}
+     */
+    public function credentials(): array
+    {
+        return [
+            'email' => $this->string('email')->toString(),
+            'token' => $this->string('token')->toString(),
+            'password' => $this->string('password')->toString(),
+        ];
+    }
 }

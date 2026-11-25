@@ -60,6 +60,21 @@ class StoreUserRequest extends FormRequest
     }
 
     /**
+     * The validated data with the types the user actions expect.
+     *
+     * @return array{name: string, email: string, role: string, coordinator_id: int|null}
+     */
+    public function userAttributes(): array
+    {
+        return [
+            'name' => $this->string('name')->toString(),
+            'email' => $this->string('email')->toString(),
+            'role' => $this->string('role')->toString(),
+            'coordinator_id' => $this->filled('coordinator_id') ? $this->integer('coordinator_id') : null,
+        ];
+    }
+
+    /**
      * The user being edited, or null when creating one.
      */
     protected function userBeingUpdated(): ?User

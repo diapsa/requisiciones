@@ -42,7 +42,7 @@ class UserController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'role' => $user->roles->first()?->name,
+                    'role' => $user->getRoleNames()->first(),
                     'coordinator' => $user->coordinator?->only(['id', 'name']),
                     'requisitions_count' => $user->requisitions_count,
                     'approvals_count' => $user->approvals_count,
@@ -62,7 +62,7 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request, CreateUser $createUser, SendUserInvitation $sendUserInvitation): RedirectResponse
     {
-        $user = $createUser->handle($request->validated());
+        $user = $createUser->handle($request->userAttributes());
 
         Inertia::flash('toast', $sendUserInvitation->handle($user)
             ? ['type' => 'success', 'message' => "Usuario creado. Le enviamos la invitación a {$user->email}."]
@@ -76,7 +76,7 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user, UpdateUser $updateUser, SendUserInvitation $sendUserInvitation): RedirectResponse
     {
-        $updateUser->handle($user, $request->validated());
+        $updateUser->handle($user, $request->userAttributes());
 
         if (! $user->wasChanged('email') || $user->hasVerifiedEmail()) {
             Inertia::flash('toast', ['type' => 'success', 'message' => 'Usuario actualizado.']);

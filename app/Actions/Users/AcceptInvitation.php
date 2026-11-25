@@ -27,7 +27,7 @@ class AcceptInvitation
      * Save the password the invited user chose and activate the account.
      * Choosing it from the emailed link proves the email is theirs, so it is marked as verified.
      *
-     * @param  array{email: string, token: string, password: string, password_confirmation?: string}  $input
+     * @param  array{email: string, token: string, password: string}  $input
      */
     public function handle(array $input): bool
     {
