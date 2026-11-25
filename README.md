@@ -195,6 +195,7 @@ La documentación del proyecto está en la carpeta [`docs/`](docs/):
 - Análisis de los formatos de Excel y diseño de la base de datos
 - Migraciones y modelos
 - Roles y permisos, sin registro público
+- Catálogos y alta de usuarios
 
 ### 🔄 En desarrollo
 
@@ -202,7 +203,6 @@ La documentación del proyecto está en la carpeta [`docs/`](docs/):
 
 ### 📋 Próximos pasos
 
-- Catálogos y alta de usuarios
 - Captura de requisiciones y autorizaciones
 - Depósitos y comprobación de gastos
 
